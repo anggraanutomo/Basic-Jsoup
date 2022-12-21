@@ -2,43 +2,49 @@ package id.anggra;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class Main
 {
     public static void main(String[] args)
     {
-        URL url;
+        try
+        {
+            Document document = Jsoup.connect("https://www.scrapingbee.com/blog")
+                    .timeout(5000)
+                    .get();
+            System.out.println(document.title());
 
-        try {
-            url = new URL("https://www.scrapingbee.com/blog");
-            HttpURLConnection connection;
+            Element content = document.getElementById("content");
+            System.out.println(content.childrenSize());
 
-            try
+            Elements blogs = document.getElementsByClass("p-10");
+            for (Element blog : blogs)
             {
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestProperty("accept","application/json");
-
-                try
-                {
-                    InputStream responseStream = connection.getInputStream();
-                    Document document = Jsoup.parse(responseStream, "UTF-8", "https://www.scrapingbee.com/blog");
-                    System.out.println(document.title());
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(blog.text());
             }
 
-        } catch (MalformedURLException e) {
-                e.printStackTrace();
+            for (Element blog : blogs)
+            {
+                String title = blog.select("h4").text();
+                String link = blog.select("a").attr("href");
+//                String headerImage = blog.select("img").first().attr("src");
+                String headerImage = blog.selectFirst("img").attr("src");
+                String authorImage = blog.select("img[src*=authors]").attr("src");
+
+                System.out.println(title);
+                System.out.println(link);
+                System.out.println(headerImage);
+                System.out.println(authorImage);
+            }
+
+
+        } catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 }
